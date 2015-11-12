@@ -5,6 +5,8 @@ import socket, sys
 from datetime import datetime
 from threading import Thread
 
+HOST = ''		# Symbolic name meaning all available interfaces
+PORT = 6666		# Default netconsole client IN Port
 
 def recv():
 	global client
@@ -22,10 +24,10 @@ def send():
 			server.sendto(server_input, client)
 
 if __name__ == "__main__" :
-	server_address = ('localhost', 6666)
+	server_address = (HOST, PORT)
 	max_size = 4096
 
-	print "Liscen to port 6666"
+	print "Liscen to port %d" % PORT
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	server.bind(server_address)
