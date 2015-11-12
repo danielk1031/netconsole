@@ -10,7 +10,7 @@ def recv():
 	global client
 	while True:
 		data, client = server.recvfrom(max_size)
-		print data,
+		sys.stdout.write(data)
 
 def send():
 	while True :
