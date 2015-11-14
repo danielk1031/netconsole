@@ -3,6 +3,7 @@
 
 import socket
 import sys
+import argparse
 from datetime import datetime
 from threading import Thread
 
@@ -24,12 +25,16 @@ class Netconsole():
 	def _recv(self):
 		while True:
 			self.data, self.server = self.client.recvfrom(self.max_size)
-			sys.stdout.write(self.data)
+			if args.HOST != '':
+				if self.server[0] == args.HOST:
+					sys.stdout.write(self.data)
+			else:
+				sys.stdout.write(self.data)
 
 	def _send(self):
-		while True :
+		while True:
 			self.client_input = sys.stdin.readline()
-			if self.client_input == "quit\n" :
+			if self.client_input == "quit\n":
 				if self.server is not None:
 					self.client.sendto("Leave Netconsole Client.\n", self.server)
 				break
@@ -55,12 +60,22 @@ class Netconsole():
 		self.client.close()
 
 
+def argv_gen():
+	parser = argparse.ArgumentParser(description='A Python Based Netconsole Client')
+	parser.add_argument('--ip', type=str, action="store", dest='HOST',
+			default='', help="Specify ip address to listen. Default is ''")
+	parser.add_argument('-p', '--port', type=int, action="store", dest='PORT',
+			default=6666, help="Specify port to listen. Default 6666 is used.")
+	args = parser.parse_args()
+	return args
+
 if __name__ == "__main__" :
-	client1 = Netconsole(HOST, PORT)
-	if HOST == '':
-		print "Listen to port %d" % PORT
+	args = argv_gen()
+	client1 = Netconsole(HOST, args.PORT)
+	if args.HOST == '':
+		print "Listen to port %d" % args.PORT
 	else :
-		print "Listen to %s:%d" % (HOST, PORT)
+		print "Listen to port %d, target is %s" % (args.PORT, args.HOST)
 	client1.worker_recv()
 	client1.worker_send()
 	client1.close()
