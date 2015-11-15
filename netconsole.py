@@ -4,6 +4,10 @@
 import socket
 import sys
 import argparse
+import termios
+import fcntl
+import os
+import time
 from datetime import datetime
 from threading import Thread
 
@@ -33,12 +37,19 @@ class Netconsole():
 
 	def __send(self):
 		while True:
-			self.client_input = sys.stdin.readline()
-			if self.client_input == "quit\n":
+			try:
+				self.client_input = sys.stdin.read(1)
+			except IOError:
+				time.sleep(0.001)
+				continue
+			if self.client_input == "q":
 				if self.server is not None:
+					self.client.sendto(self.client_input, self.server)
 					self.client.sendto("Leave Netconsole Client.\n", self.server)
+				termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+				fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 				break
-			if self.client_input is not None:
+			else:
 				if self.server is not None:
 					self.client.sendto(self.client_input, self.server)
 
@@ -69,8 +80,20 @@ def argv_gen():
 	args = parser.parse_args()
 	return args
 
+def nonblocking_stdin():
+	global fd, oldterm, oldflags
+	fd = sys.stdin.fileno()
+	oldterm = termios.tcgetattr(fd)
+	newattr = termios.tcgetattr(fd)
+	newattr[3] = newattr[3] & ~termios.ICANON
+	termios.tcsetattr(fd, termios.TCSANOW, newattr)
+	oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+	fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+
 if __name__ == "__main__" :
 	args = argv_gen()
+	nonblocking_stdin()
+
 	client1 = Netconsole(HOST, args.PORT)
 	if args.HOST == '':
 		print "Listen to port %d" % args.PORT
