@@ -22,7 +22,7 @@ class Netconsole():
 		self.stopflag = 0
 		self.server = None
 
-	def _recv(self):
+	def __recv(self):
 		while True:
 			self.data, self.server = self.client.recvfrom(self.max_size)
 			if args.HOST != '':
@@ -31,7 +31,7 @@ class Netconsole():
 			else:
 				sys.stdout.write(self.data)
 
-	def _send(self):
+	def __send(self):
 		while True:
 			self.client_input = sys.stdin.readline()
 			if self.client_input == "quit\n":
@@ -43,14 +43,14 @@ class Netconsole():
 					self.client.sendto(self.client_input, self.server)
 
 	def worker_send(self):
-		th_send = Thread(target = self._send)
+		th_send = Thread(target = self.__send)
 		th_send.setDaemon(True)
 		th_send.start()
 		th_send.join()
 		self.stopflag = 1
 
 	def worker_recv(self):
-		th_recv = Thread(target = self._recv)
+		th_recv = Thread(target = self.__recv)
 		th_recv.setDaemon(True)
 		th_recv.start()
 
