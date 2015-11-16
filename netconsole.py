@@ -42,10 +42,8 @@ class Netconsole():
 			except IOError:
 				time.sleep(0.001)
 				continue
-			if self.client_input == "q":
-				if self.server is not None:
-					self.client.sendto(self.client_input, self.server)
-					self.client.sendto("Leave Netconsole Client.\n", self.server)
+			if self.client_input == "\x14":
+				print "\nLeave Netconsole Client.\n"
 				termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
 				fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 				break
@@ -95,6 +93,7 @@ if __name__ == "__main__" :
 	nonblocking_stdin()
 
 	client1 = Netconsole(HOST, args.PORT)
+	print "Using ^T to quit this Netconsole Client"
 	if args.HOST == '':
 		print "Listen to port %d" % args.PORT
 	else :
