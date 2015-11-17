@@ -10,10 +10,13 @@ netconsole.py [OPTIONS]
 ##OPTIONS
 	--ip
 		Specify ip address to listen.
-		Default is for all available interfaces
+		Default is for all available interfaces.
 
 	-p, --port
-		pecify port to listen. Default 6666 is used.
+		Specify port to listen. Default 6666 is used.
+
+	-q, --quit
+		Specify key to quit netconsole client. Default ^T is used.
 
 	-h, --help
-		show help message and exit
+		show help message and exit.
