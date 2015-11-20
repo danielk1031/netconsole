@@ -8,6 +8,7 @@ import termios
 import fcntl
 import os
 import time
+import signal
 from datetime import datetime
 from threading import Thread
 
@@ -26,6 +27,7 @@ class Netconsole():
 		self.client.bind(self.client_addr)
 		self.stopflag = 0
 		self.server = None
+		signal.signal(signal.SIGINT, self.signal_int_handler)
 
 	def __recv(self):
 		while True:
@@ -44,9 +46,10 @@ class Netconsole():
 				time.sleep(0.001)
 				continue
 			if self.client_input == self.c_sigint:
-				print "\nLeave Netconsole Client.\n"
+				print "\n\nLeave Netconsole Client.\n"
 				termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
 				fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+				self.stopflag = 1
 				break
 			else:
 				if self.server is not None:
@@ -56,8 +59,7 @@ class Netconsole():
 		th_send = Thread(target = self.__send)
 		th_send.setDaemon(True)
 		th_send.start()
-		th_send.join()
-		self.stopflag = 1
+		#th_send.join()
 
 	def worker_recv(self):
 		th_recv = Thread(target = self.__recv)
@@ -67,8 +69,11 @@ class Netconsole():
 	def close(self):
 		while self.stopflag == 0 :
 			pass
-		self.client.close()
 
+	def signal_int_handler(self, sig, frame):
+		if self.server is not None:
+			self.client.sendto('\x03', self.server)
+		pass
 
 def argv_gen():
 	parser = argparse.ArgumentParser(description='A Python Based Netconsole Client')
